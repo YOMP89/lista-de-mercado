@@ -4,7 +4,7 @@
 
 Una aplicación web simple pero efectiva para gestionar tus compras en el supermercado. Esta herramienta te permite crear una lista de productos, marcarlos como completados (tachándolos) mientras haces las compras, y mantener un registro organizado de tus necesidades.
 
-![Lista de Mercado App](/api/placeholder/800/400)
+
 
 ## 📋 Características
 
