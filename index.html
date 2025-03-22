@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Mercado</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f7f7f7;
+            color: #333;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4e9c4e;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        #item-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px 0 0 5px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        #add-button {
+            padding: 12px 20px;
+            background-color: #4e9c4e;
+            color: white;
+            border: none;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        #add-button:hover {
+            background-color: #3a8c3a;
+        }
+
+        ul {
+            list-style-type: none;
+        }
+
+        li {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+
+        li:hover {
+            background-color: #f9f9f9;
+        }
+
+        li.completed {
+            text-decoration: line-through;
+            color: #888;
+            background-color: #f5f5f5;
+        }
+
+        .checkbox {
+            margin-right: 10px;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #4e9c4e;
+            border-radius: 50%;
+            display: inline-block;
+            position: relative;
+        }
+
+        .completed .checkbox::after {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            width: 6px;
+            height: 6px;
+            background-color: #4e9c4e;
+            border-radius: 50%;
+        }
+
+        .info {
+            text-align: center;
+            margin-top: 20px;
+            color: #777;
+            font-size: 14px;
+        }
+
+        .clear-btn {
+            display: block;
+            margin: 20px auto 0;
+            padding: 10px 15px;
+            background-color: #f0f0f0;
+            border: none;
+            border-radius: 5px;
+            color: #555;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .clear-btn:hover {
+            background-color: #e0e0e0;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            #item-input, #add-button {
+                padding: 10px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Lista de Mercado</h1>
+        
+        <div class="input-group">
+            <input type="text" id="item-input" placeholder="Añadir producto...">
+            <button id="add-button">Añadir</button>
+        </div>
+        
+        <ul id="shopping-list"></ul>
+        
+        <div class="info" id="items-count">0 productos en la lista</div>
+        
+        <button class="clear-btn" id="clear-completed">Limpiar completados</button>
+        <button class="clear-btn" id="clear-all">Limpiar todo</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elementos del DOM
+            const itemInput = document.getElementById('item-input');
+            const addButton = document.getElementById('add-button');
+            const shoppingList = document.getElementById('shopping-list');
+            const itemsCount = document.getElementById('items-count');
+            const clearCompletedBtn = document.getElementById('clear-completed');
+            const clearAllBtn = document.getElementById('clear-all');
+            
+            // Cargar lista desde localStorage
+            let items = JSON.parse(localStorage.getItem('shoppingList')) || [];
+            
+            // Renderizar la lista inicial
+            renderList();
+            
+            // Añadir evento al botón
+            addButton.addEventListener('click', addItem);
+            
+            // Añadir evento al input (para añadir con Enter)
+            itemInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addItem();
+                }
+            });
+            
+            // Evento para limpiar completados
+            clearCompletedBtn.addEventListener('click', function() {
+                items = items.filter(item => !item.completed);
+                saveList();
+                renderList();
+            });
+            
+            // Evento para limpiar todo
+            clearAllBtn.addEventListener('click', function() {
+                if (confirm('¿Estás seguro de que quieres eliminar toda la lista?')) {
+                    items = [];
+                    saveList();
+                    renderList();
+                }
+            });
+            
+            // Función para añadir un nuevo producto
+            function addItem() {
+                const text = itemInput.value.trim();
+                
+                if (text !== '') {
+                    items.push({
+                        id: Date.now(),
+                        text: text,
+                        completed: false
+                    });
+                    
+                    saveList();
+                    renderList();
+                    itemInput.value = '';
+                    itemInput.focus();
+                }
+            }
+            
+            // Función para guardar la lista en localStorage
+            function saveList() {
+                localStorage.setItem('shoppingList', JSON.stringify(items));
+            }
+            
+            // Función para renderizar la lista
+            function renderList() {
+                shoppingList.innerHTML = '';
+                
+                items.forEach(item => {
+                    const li = document.createElement('li');
+                    const checkbox = document.createElement('span');
+                    
+                    checkbox.classList.add('checkbox');
+                    li.appendChild(checkbox);
+                    
+                    li.appendChild(document.createTextNode(item.text));
+                    
+                    if (item.completed) {
+                        li.classList.add('completed');
+                    }
+                    
+                    li.addEventListener('click', function() {
+                        toggleItem(item.id);
+                    });
+                    
+                    shoppingList.appendChild(li);
+                });
+                
+                // Actualizar contador
+                const completedCount = items.filter(item => item.completed).length;
+                itemsCount.textContent = `${items.length} productos en la lista (${completedCount} completados)`;
+            }
+            
+            // Función para marcar o desmarcar un producto
+            function toggleItem(id) {
+                const item = items.find(item => item.id === id);
+                if (item) {
+                    item.completed = !item.completed;
+                    saveList();
+                    renderList();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
